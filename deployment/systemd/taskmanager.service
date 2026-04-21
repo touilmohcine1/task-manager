@@ -1,0 +1,41 @@
+# ============================================================
+# Systemd Service — Task Manager (Gunicorn)
+# File: /etc/systemd/system/taskmanager.service
+# ============================================================
+[Unit]
+Description=Task Manager Flask App (Gunicorn)
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+User=taskmanager
+Group=taskmanager
+WorkingDirectory=/opt/taskmanager/backend
+
+# Load environment variables from .env file
+EnvironmentFile=/opt/taskmanager/backend/.env
+
+# Gunicorn command
+ExecStart=/opt/taskmanager/venv/bin/gunicorn \
+    --bind 127.0.0.1:5000 \
+    --workers 2 \
+    --timeout 60 \
+    --access-logfile /var/log/taskmanager/access.log \
+    --error-logfile  /var/log/taskmanager/error.log \
+    run:app
+
+# Restart policy — keeps app alive after reboot
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=taskmanager
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+# WantedBy=multi-user.target → starts automatically on boot
+WantedBy=multi-user.target

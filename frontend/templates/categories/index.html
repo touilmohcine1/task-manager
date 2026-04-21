@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}التصنيفات — مهامي{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🏷️ التصنيفات</h1>
+  <a href="{{ url_for('categories.create') }}" class="btn btn-primary">➕ تصنيف جديد</a>
+</div>
+
+{% if categories %}
+<div class="categories-grid">
+  {% for cat in categories %}
+  <div class="category-card" style="border-top: 4px solid {{ cat.color }}">
+    <div class="category-card-header">
+      <div class="category-big-icon" style="background:{{ cat.color }}20; color:{{ cat.color }}">
+        {{ cat.icon }}
+      </div>
+      <div>
+        <h3>{{ cat.name }}</h3>
+        <span class="category-count">{{ cat.tasks|length }} مهمة</span>
+      </div>
+    </div>
+
+    <div class="category-tasks-preview">
+      {% for task in cat.tasks[:3] %}
+      <div class="mini-task status-{{ task.status }}">
+        <span class="mini-dot"></span>
+        <span>{{ task.title[:30] }}{% if task.title|length > 30 %}...{% endif %}</span>
+      </div>
+      {% endfor %}
+      {% if cat.tasks|length > 3 %}
+      <div class="mini-task-more">+ {{ cat.tasks|length - 3 }} أخرى</div>
+      {% endif %}
+    </div>
+
+    <div class="category-card-actions">
+      <a href="{{ url_for('tasks.index', category=cat.id) }}" class="btn btn-sm btn-outline">📋 المهام</a>
+      <a href="{{ url_for('categories.edit', cat_id=cat.id) }}" class="btn btn-sm btn-outline">✏️</a>
+      <form method="POST" action="{{ url_for('categories.delete', cat_id=cat.id) }}"
+            onsubmit="return confirm('حذف هذا التصنيف وإلغاء ربط مهامه؟')">
+        <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-page">
+  <div class="empty-icon">🏷️</div>
+  <h2>لا توجد تصنيفات</h2>
+  <p>أنشئ تصنيفات لتنظيم مهامك بشكل أفضل</p>
+  <a href="{{ url_for('categories.create') }}" class="btn btn-primary">➕ تصنيف جديد</a>
+</div>
+{% endif %}
+{% endblock %}

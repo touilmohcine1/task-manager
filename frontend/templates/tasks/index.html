@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}المهام — مهامي{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">📋 المهام</h1>
+  <a href="{{ url_for('tasks.create') }}" class="btn btn-primary">➕ مهمة جديدة</a>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <a href="{{ url_for('tasks.index') }}"
+     class="filter-btn {% if not current_status %}active{% endif %}">الكل</a>
+
+  {% for status, label in [('todo','قيد الانتظار'),('in_progress','جارٍ'),('done','مكتملة')] %}
+  <a href="{{ url_for('tasks.index', status=status, priority=current_priority, category=current_category) }}"
+     class="filter-btn {% if current_status == status %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+
+  <span class="filter-sep">|</span>
+
+  {% for prio, label in [('high','عالية'),('medium','متوسطة'),('low','منخفضة')] %}
+  <a href="{{ url_for('tasks.index', priority=prio, status=current_status, category=current_category) }}"
+     class="filter-btn priority-filter priority-{{ prio }} {% if current_priority == prio %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+
+  {% if categories %}
+  <span class="filter-sep">|</span>
+  {% for cat in categories %}
+  <a href="{{ url_for('tasks.index', category=cat.id, status=current_status, priority=current_priority) }}"
+     class="filter-btn {% if current_category == cat.id|string %}active{% endif %}"
+     style="{% if current_category == cat.id|string %}background:{{ cat.color }}30;border-color:{{ cat.color }}{% endif %}">
+    {{ cat.icon }} {{ cat.name }}
+  </a>
+  {% endfor %}
+  {% endif %}
+</div>
+
+<!-- Task Cards -->
+{% if tasks %}
+<div class="tasks-grid">
+  {% for task in tasks %}
+  <div class="task-card priority-border-{{ task.priority }}" id="task-{{ task.id }}">
+    <div class="task-card-header">
+      <span class="status-badge status-{{ task.status }}">
+        {% if task.status == 'todo' %}⏳{% elif task.status == 'in_progress' %}🔄{% else %}✅{% endif %}
+        {{ task.STATUS_LABELS[task.status] }}
+      </span>
+      <span class="priority-tag priority-{{ task.priority }}">{{ task.PRIORITY_LABELS[task.priority] }}</span>
+    </div>
+
+    <h3 class="task-card-title {% if task.status == 'done' %}done{% endif %}">{{ task.title }}</h3>
+
+    {% if task.description %}
+    <p class="task-card-desc">{{ task.description[:80] }}{% if task.description|length > 80 %}...{% endif %}</p>
+    {% endif %}
+
+    <div class="task-card-meta">
+      {% if task.category %}
+      <span class="task-badge" style="background:{{ task.category.color }}20;color:{{ task.category.color }}">
+        {{ task.category.icon }} {{ task.category.name }}
+      </span>
+      {% endif %}
+      {% if task.due_date %}
+      <span class="due-date {% if task.due_date < now.now().date() and task.status != 'done' %}overdue{% endif %}">
+        📅 {{ task.due_date.strftime('%Y/%m/%d') }}
+      </span>
+      {% endif %}
+    </div>
+
+    <div class="task-card-actions">
+      <select class="status-select" data-task-id="{{ task.id }}" onchange="updateTaskStatus(this)">
+        <option value="todo"        {% if task.status=='todo' %}selected{% endif %}>⏳ انتظار</option>
+        <option value="in_progress" {% if task.status=='in_progress' %}selected{% endif %}>🔄 جارٍ</option>
+        <option value="done"        {% if task.status=='done' %}selected{% endif %}>✅ مكتمل</option>
+      </select>
+      <a href="{{ url_for('tasks.edit', task_id=task.id) }}" class="btn btn-sm btn-outline">✏️</a>
+      <form method="POST" action="{{ url_for('tasks.delete', task_id=task.id) }}"
+            onsubmit="return confirm('حذف هذه المهمة؟')">
+        <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-page">
+  <div class="empty-icon">📭</div>
+  <h2>لا توجد مهام</h2>
+  <p>لم يتم العثور على مهام بهذا الفلتر</p>
+  <a href="{{ url_for('tasks.create') }}" class="btn btn-primary">➕ أضف مهمة</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function updateTaskStatus(select) {
+  const taskId = select.dataset.taskId;
+  const status = select.value;
+  const res = await fetch(`/tasks/${taskId}/status`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({status})
+  });
+  if (res.ok) {
+    const card = document.getElementById(`task-${taskId}`);
+    card.style.opacity = '0.6';
+    setTimeout(() => location.reload(), 500);
+  }
+}
+
+function now() {
+  return {date: () => new Date()};
+}
+</script>
+{% endblock %}

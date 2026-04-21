@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم — مهامي{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">مرحباً، {{ current_user.username }} {{ current_user.avatar }}</h1>
+  <p class="page-subtitle">إليك ملخص مهامك اليوم</p>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+  <div class="stat-card stat-total">
+    <div class="stat-icon">📋</div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.total }}</div>
+      <div class="stat-label">إجمالي المهام</div>
+    </div>
+  </div>
+  <div class="stat-card stat-todo">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.todo }}</div>
+      <div class="stat-label">قيد الانتظار</div>
+    </div>
+  </div>
+  <div class="stat-card stat-progress">
+    <div class="stat-icon">🔄</div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.in_progress }}</div>
+      <div class="stat-label">جارٍ التنفيذ</div>
+    </div>
+  </div>
+  <div class="stat-card stat-done">
+    <div class="stat-icon">✅</div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.done }}</div>
+      <div class="stat-label">مكتملة</div>
+    </div>
+  </div>
+  <div class="stat-card stat-overdue">
+    <div class="stat-icon">⚠️</div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.overdue }}</div>
+      <div class="stat-label">متأخرة</div>
+    </div>
+  </div>
+  <div class="stat-card stat-high">
+    <div class="stat-icon">🔥</div>
+    <div class="stat-body">
+      <div class="stat-number">{{ stats.high }}</div>
+      <div class="stat-label">أولوية عالية</div>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-row">
+  <!-- Recent Tasks -->
+  <div class="dashboard-panel">
+    <div class="panel-header">
+      <h2>آخر المهام</h2>
+      <a href="{{ url_for('tasks.index') }}" class="btn btn-sm btn-outline">عرض الكل</a>
+    </div>
+    {% if recent_tasks %}
+      <div class="task-list">
+        {% for task in recent_tasks %}
+        <div class="task-row" data-id="{{ task.id }}">
+          <div class="task-status-dot status-{{ task.status }}"></div>
+          <div class="task-info">
+            <span class="task-title {% if task.status == 'done' %}done{% endif %}">{{ task.title }}</span>
+            {% if task.category %}
+              <span class="task-badge" style="background:{{ task.category.color }}20; color:{{ task.category.color }}">
+                {{ task.category.icon }} {{ task.category.name }}
+              </span>
+            {% endif %}
+          </div>
+          <span class="priority-tag priority-{{ task.priority }}">{{ task.PRIORITY_LABELS[task.priority] }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>لا توجد مهام بعد</p>
+        <a href="{{ url_for('tasks.create') }}" class="btn btn-primary btn-sm">أضف مهمة</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Categories Summary -->
+  <div class="dashboard-panel">
+    <div class="panel-header">
+      <h2>التصنيفات</h2>
+      <a href="{{ url_for('categories.index') }}" class="btn btn-sm btn-outline">إدارة</a>
+    </div>
+    {% if categories %}
+      <div class="categories-list">
+        {% for cat in categories %}
+        <div class="category-row">
+          <div class="category-icon" style="background:{{ cat.color }}20; color:{{ cat.color }}">
+            {{ cat.icon }}
+          </div>
+          <div class="category-info">
+            <span class="category-name">{{ cat.name }}</span>
+            <span class="category-count">{{ cat.tasks|length }} مهمة</span>
+          </div>
+          <div class="category-bar">
+            <div class="category-bar-fill" style="background:{{ cat.color }};
+              width:{% if stats.total > 0 %}{{ (cat.tasks|length / stats.total * 100)|round|int }}%{% else %}0%{% endif %}">
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>لا توجد تصنيفات</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Quick Add -->
+<div class="quick-add-bar">
+  <a href="{{ url_for('tasks.create') }}" class="btn btn-primary">
+    <span>➕</span> إضافة مهمة جديدة
+  </a>
+</div>
+{% endblock %}

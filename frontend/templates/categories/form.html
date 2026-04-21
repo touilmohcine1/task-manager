@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{% if category %}تعديل التصنيف{% else %}تصنيف جديد{% endif %} — مهامي{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{% if category %}✏️ تعديل التصنيف{% else %}➕ تصنيف جديد{% endif %}</h1>
+  <a href="{{ url_for('categories.index') }}" class="btn btn-outline">← رجوع</a>
+</div>
+
+<div class="form-page form-page-sm">
+  <form method="POST" class="main-form">
+    <div class="form-group">
+      <label for="name">اسم التصنيف <span class="required">*</span></label>
+      <input type="text" id="name" name="name" required maxlength="50"
+             value="{{ category.name if category else '' }}"
+             placeholder="مثال: العمل، الشخصية..." />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="icon">الأيقونة</label>
+        <input type="text" id="icon" name="icon" maxlength="10"
+               value="{{ category.icon if category else '📁' }}"
+               placeholder="📁" />
+        <small class="form-hint">أدخل رمز إيموجي واحد</small>
+      </div>
+
+      <div class="form-group">
+        <label for="color">اللون</label>
+        <div class="color-picker-row">
+          <input type="color" id="color" name="color"
+                 value="{{ category.color if category else '#6366f1' }}" />
+          <div class="color-presets">
+            {% for clr in ['#6366f1','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#14b8a6'] %}
+            <div class="color-preset" style="background:{{ clr }}"
+                 onclick="document.getElementById('color').value='{{ clr }}'"></div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="form-group">
+      <label>معاينة</label>
+      <div class="category-preview" id="preview">
+        <span id="prev-icon">{{ category.icon if category else '📁' }}</span>
+        <span id="prev-name">{{ category.name if category else 'اسم التصنيف' }}</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        {% if category %}💾 حفظ التعديلات{% else %}✅ إنشاء التصنيف{% endif %}
+      </button>
+      <a href="{{ url_for('categories.index') }}" class="btn btn-outline">إلغاء</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const nameInput  = document.getElementById('name');
+  const iconInput  = document.getElementById('icon');
+  const colorInput = document.getElementById('color');
+  const prevIcon   = document.getElementById('prev-icon');
+  const prevName   = document.getElementById('prev-name');
+  const preview    = document.getElementById('preview');
+
+  nameInput.addEventListener('input',  () => prevName.textContent = nameInput.value || 'اسم التصنيف');
+  iconInput.addEventListener('input',  () => prevIcon.textContent = iconInput.value || '📁');
+  colorInput.addEventListener('input', () => {
+    preview.style.borderColor = colorInput.value;
+    preview.style.background  = colorInput.value + '20';
+    preview.style.color       = colorInput.value;
+  });
+</script>
+{% endblock %}

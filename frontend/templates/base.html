@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}مدير المهام{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<!-- ── Sidebar ───────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">✅</span>
+    <span class="logo-text">مهامي</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+      <span class="nav-icon">🏠</span>
+      <span>لوحة التحكم</span>
+    </a>
+    <a href="{{ url_for('tasks.index') }}" class="nav-item {% if 'tasks' in request.endpoint %}active{% endif %}">
+      <span class="nav-icon">📋</span>
+      <span>المهام</span>
+    </a>
+    <a href="{{ url_for('tasks.create') }}" class="nav-item {% if request.endpoint == 'tasks.create' %}active{% endif %}">
+      <span class="nav-icon">➕</span>
+      <span>مهمة جديدة</span>
+    </a>
+    <a href="{{ url_for('categories.index') }}" class="nav-item {% if 'categories' in request.endpoint %}active{% endif %}">
+      <span class="nav-icon">🏷️</span>
+      <span>التصنيفات</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <span class="user-avatar">{{ current_user.avatar }}</span>
+      <span class="user-name">{{ current_user.username }}</span>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">تسجيل الخروج</a>
+  </div>
+</aside>
+
+<!-- ── Main Content ──────────────────────────────────────── -->
+<main class="main-content">
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()">✕</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+{% else %}
+<!-- No sidebar for auth pages -->
+<main class="main-content auth-content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container auth-flash">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+{% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

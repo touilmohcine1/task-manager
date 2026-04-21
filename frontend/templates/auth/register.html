@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}إنشاء حساب — مهامي{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">✅</div>
+      <h1>حساب جديد</h1>
+      <p>انضم إلى مهامي وابدأ بتنظيم يومك</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+      <div class="form-group">
+        <label for="username">اسم المستخدم</label>
+        <input type="text" id="username" name="username" required
+               placeholder="ahmed_2024" minlength="3" maxlength="50" />
+      </div>
+
+      <div class="form-group">
+        <label for="email">البريد الإلكتروني</label>
+        <input type="email" id="email" name="email" required placeholder="your@email.com" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">كلمة المرور</label>
+        <input type="password" id="password" name="password" required
+               placeholder="••••••••" minlength="6" />
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password">تأكيد كلمة المرور</label>
+        <input type="password" id="confirm_password" name="confirm_password" required
+               placeholder="••••••••" minlength="6" />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">إنشاء الحساب</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>لديك حساب بالفعل؟ <a href="{{ url_for('auth.login') }}">سجّل الدخول</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
